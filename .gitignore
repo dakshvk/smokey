@@ -1,0 +1,20 @@
+# Datasets — 45GB+, never commit these
+data/figlib/
+data/pyronear/
+*.tgz
+*.jpg
+*.mp4
+
+# Model weights
+*.pt
+*.onnx
+models/*.bin
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# OS
+.DS_Store
