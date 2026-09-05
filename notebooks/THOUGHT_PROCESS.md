@@ -1,390 +1,434 @@
-# Thought Process — Living Log
+# Project Smokey: working log
 
-## RULES FOR CLAUDE — read before every code explanation
+A running record of the reasoning behind every unfamiliar piece of code in this project,
+plus the findings and mistakes that shaped the design. These are notes, not code. Nothing
+in the project imports or runs this file. The Python in `explore.ipynb` and `eval/` is
+hand typed line by line.
 
-These are not suggestions. Violating them has repeatedly wasted Daksh's time.
+## What I require of an explanation
 
-1. **NEVER introduce a name without explaining it, at the moment it first appears.**
-   Every function, method, attribute, and argument. No exceptions for "obvious" ones.
-   If code contains `ax.set_xlim(0, 10)`, then `set_xlim` gets explained right there --
-   not later, not "you'll pick it up."
+I set these rules early because I kept accepting code I could not have written myself.
 
-2. **For every new function, state three things:**
-   - what it IS (a function? a method on an object? an attribute?)
-   - what it DOES (in plain words)
-   - what it RETURNS (or explicitly: "returns nothing, it changes something in place")
+1. No name goes unexplained at the point it first appears. Every function, method,
+   attribute, and argument, including the ones that look obvious. If a line contains
+   `ax.set_xlim(0, 10)`, then `set_xlim` gets explained right there rather than later.
 
-3. **Never assert an API's behavior from memory.** Verify it live -- `inspect.signature`,
-   `__doc__`, or just run it -- and SHOW the verification. If the docs are ambiguous,
-   say so out loud instead of filling the gap with assumption.
+2. For each new function I want three things: what it is (function, method on an object,
+   attribute), what it does in plain words, and what it returns. "Returns nothing, changes
+   something in place" counts as an answer.
 
-4. **Distinguish CREATE from DISPLAY.** Many libraries separate "make an object" from
-   "put it on screen." When that split exists, name it explicitly -- it is the single
-   most common source of "why is nothing showing up."
+3. No claim about an API from memory. Verify it live with `inspect.signature`, `__doc__`,
+   or by running it, and show the verification. Where the docs are ambiguous, say so
+   instead of filling the gap with a guess.
 
-5. **One concept at a time.** Do not fix a bug, introduce a new function, and refactor
-   structure in the same message.
+4. Keep CREATE separate from DISPLAY. Many libraries split "make an object" from "put it
+   on screen." That split is the most common reason nothing shows up.
 
-6. **Call on this file every time.** Re-read these rules before writing any code
-   explanation, and append new Q&A entries as they come up.
+5. One concept at a time. Do not fix a bug, introduce a new function, and restructure
+   things in the same breath.
 
-7. **Every tutor solution is written in the annotated style** -- the WHAT IT IS /
-   WHAT IT DOES / WHAT IT RETURNS format, with a WHY line wherever a choice was
-   non-obvious, and an explicit warning wherever skipping a step fails SILENTLY
-   rather than erroring. A bare code block is never an acceptable "answer".
+6. Every worked solution uses the annotated style above, with a reason attached wherever
+   a choice was not obvious, and an explicit warning wherever skipping a step fails
+   silently instead of raising. A bare code block is not an answer.
 
-8. **Write tutor targets JUST IN TIME, never in advance.** Seed a day's targets
-   when Daksh actually reaches that day, not before. Reasons: he is behind the
-   original schedule and a wall of unwritten future days is discouraging; the
-   earlier days keep surfacing facts (multi-box rows, class_id always 1, camera
-   skew) that change what the later targets should say; and every solution has to
-   be RUN against the real dataset before seeding, which is wasted effort if the
-   plan shifts underneath it.
+## Four moves when I get stuck
 
+1. Look at what I actually have. `type(x)` before assuming anything about an object.
+2. Interrogate it. `dir(x)` lists what it can do. Read the names without underscores.
+3. Print compulsively. Before writing real code against a value, print it raw and look at it.
+4. Find the gap. Name what I have, name what I want, and ask which single operation turns
+   one into the other.
 
-A running record of the reasoning behind every unfamiliar piece of code, updated as
-Daksh works through Project Smokey. This file is notes, not code — nothing in the
-project imports or runs it. The actual Python in explore.ipynb and beyond stays
-hand-typed line by line.
+## Debugging habits so far
 
-## The four moves, every time you're stuck
+Read a traceback from the bottom up. The last line is almost always the real answer, and
+everything above it is the chain of calls that led there.
 
-1. **Look at what you actually have.** `type(x)` before assuming anything about an object.
-2. **Interrogate it.** `dir(x)` lists everything it can do — read the non-underscore names.
-3. **Print compulsively.** Before writing real code against a value, print it raw and look.
-4. **Find the gap.** Name what you HAVE, name what you WANT, ask: what single operation
-   turns one into the other?
+Compare error messages character by character against what I meant to type. A `NameError`
+naming something I clearly meant to define usually means a typo in the assignment itself,
+like `-` instead of `=`, rather than a missing variable.
 
-## Debugging habits established so far
+Notebooks remember execution order, not page order. The kernel only knows about cells I
+actually ran, in the order I ran them. If a variable is undefined but the cell defining it
+sits above, check whether that cell really ran by looking at its `[N]` number, or use Run
+All to reset cleanly.
 
-- **Read a traceback from the BOTTOM up.** The last line is almost always the real answer;
-  everything above it is just the chain of calls that led there.
-- **Compare error messages character by character** against what you meant to type —
-  a `NameError` naming something you clearly meant to define usually means a typo in the
-  assignment itself (e.g. `-` instead of `=`), not a missing variable.
-- **Notebooks remember execution order, not page order.** The kernel only knows about
-  cells you've actually run, in the order you ran them. If a variable "isn't defined"
-  but the cell defining it is clearly above — check whether that cell actually ran
-  (look at its `[N]` number), or use Run All to reset cleanly.
-- **"How do you know that?"** — any claim about data format or repo behavior should trace
-  to one of two things: (a) it was actually run and observed, here's the command, or
-  (b) it's documented somewhere real, here's the source. Never just memory.
+Ask "how do I know that?" Any claim about data format or repo behavior should trace to one
+of two things: I ran it and observed the result, and here is the command, or it is
+documented somewhere real, and here is the source. Memory does not count.
 
-## Definition of done for explore.ipynb
+## Q&A log
 
-- [ ] Cell 3: grid of 12 images viewed
-- [ ] Cell 4: box(es) drawn and visually correct across 5-10 different images
-- [ ] Cell 4: handles an image with multiple smoke boxes without crashing
-- [ ] New: class_id question resolved -- full set of values collected, meaning known
-- [ ] Cell 5: camera distribution counted, checked for skew
+### Why does `.size` exist on the image, and how do I know?
 
-## Q&A Log
-
-### Why does `.size` exist on the image, and how do we know?
-`type(img)` showed `PIL.JpegImageFile` — a Pillow image. `.size`, `.mode`, `.format` are
-core, stable Pillow API, not specific to this dataset. Verified live: `img.size` returned
-`(1280, 720)` without error, which is itself the proof it exists (a missing attribute
-would crash with AttributeError instead of returning a value).
+`type(img)` showed `PIL.JpegImageFile`, a Pillow image. `.size`, `.mode`, and `.format` are
+core Pillow API, not something specific to this dataset. Verified live: `img.size` returned
+`(1280, 720)` without error, which is itself the proof it exists. A missing attribute would
+raise AttributeError instead of returning a value.
 
 ### What does the annotation string actually mean?
-Verified against the real HF dataset card (huggingface.co/datasets/pyronear/pyro-sdis),
-not memory: `class_id x_center y_center width height`, all four coordinates normalized
-(fractions of image size, 0-1), YOLO format. Confirmed NOT a count -- a count wouldn't
-have decimals.
+
+Verified against the HF dataset card at huggingface.co/datasets/pyronear/pyro-sdis rather
+than memory: `class_id x_center y_center width height`, with all four coordinates
+normalized to fractions of image size between 0 and 1. That is YOLO format. It is not a
+count, which I confirmed by noticing a count would not have decimals.
 
 ### Can one image have more than one smoke box?
-Yes -- proven two ways: (1) README states 31,975 instances across 28,103 smoke images,
-a ratio of ~1.14, which is only possible if some images contribute more than one box;
-(2) direct search for `\n` inside annotation strings should find a real example.
-Consequence: any code that assumes exactly 5 numbers per annotation (`.split()` with
-no argument) will break on a multi-box image -- must `.split("\n")` first, then split
+
+Yes, provable two ways. The README states 31,975 instances across 28,103 smoke images, a
+ratio of about 1.14, which is only possible if some images contribute more than one box.
+Searching for `\n` inside the annotation strings finds real examples directly.
+
+The consequence is that any code assuming exactly 5 numbers per annotation, meaning
+`.split()` with no argument, breaks on a multi box image. Split on `"\n"` first, then split
 each line separately.
 
-### What does class_id actually range over? (RESOLVED)
-README's own example uses class 0; real rows show class 1. Settled by collecting the
-full set across 500 training rows: the result is `{'1'}` -- ALWAYS 1, never 0. So this
-is a single-class detection problem, and the README's `0` was a generic placeholder in
-an illustrative example, not literal data. Confirms Day 4's training config should
-declare exactly one class.
+### What does class_id actually range over? (resolved)
+
+The README's own example uses class 0 while real rows show class 1. I settled it by
+collecting the full set across 500 training rows. The result is `{'1'}`, always 1 and never
+0. So this is a single class detection problem, and the README's 0 was a generic
+placeholder in an illustrative example rather than literal data. That confirms the training
+config should declare exactly one class.
 
 ### What is `p` in `[float(p) for p in line.split()]`, and why `float()` at all?
-`p` is just a loop variable name (short for "piece"), holding one item at a time from
-the list `line.split()` produces -- nothing special about the letter. `.split()` returns
-a list of STRINGS, even when they look like numbers ("0.067" is text, not a number, to
-Python). Proven live: `1280 * "0.0670989"` does NOT multiply -- Python repeats the
-string 1280 times, producing 11,520 characters of garbage, silently, no error. `float()`
-is what actually converts the text into a real number safe to do arithmetic on.
+
+`p` is just a loop variable name, short for "piece," holding one item at a time from the
+list `line.split()` produces. Nothing special about the letter.
+
+`.split()` returns a list of strings even when they look like numbers. To Python, "0.067"
+is text. I proved this live: `1280 * "0.0670989"` does not multiply. Python repeats the
+string 1280 times and produces 11,520 characters of garbage, silently, with no error.
+`float()` is what converts the text into a real number safe to do arithmetic on.
 
 ### What is `cls`?
-Short for "class" -- holds the box's class_id after conversion. Can't be named `class`
-outright: that word is a reserved Python keyword (used to define classes, e.g.
-`class Dog:`), so `cls` is the standard workaround.
 
-### Which corner does patches.Rectangle anchor to? (RESOLVED by experiment)
-Matplotlib's docstring only says `xy : (float, float) -- The anchor point`, never
-naming a corner. Settled empirically: drew Rectangle((2,2), 4, 3) on a plot with
-set_xlim(0,10), set_ylim(0,10), invert_yaxis(). Observed edges: x spans 2->6,
-y spans 2->5. So the anchor is the corner with MINIMUM x and MINIMUM y.
+Short for "class," holding the box's class_id after conversion. It cannot be named `class`
+outright because that is a reserved Python keyword used to define classes, as in
+`class Dog:`, so `cls` is the standard workaround.
 
-Whether that LOOKS like top-left depends on axis direction -- with invert_yaxis()
-(and with imshow, which inverts automatically) minimum y is the top, so it renders
-top-left. On a normal upward y-axis the identical code anchors bottom-left instead.
-That ambiguity is exactly why the docs say "anchor point" and not "top-left corner".
+### Which corner does patches.Rectangle anchor to? (resolved by experiment)
 
-Consequence: `x0 = x_center*img_w - box_w_px/2` and `y0 = y_center*img_h - box_h_px/2`
-produce the minimum-x/minimum-y corner, which is what Rectangle wants. Box math CONFIRMED.
+Matplotlib's docstring only says `xy : (float, float)`, the anchor point, and never names a
+corner. I settled it empirically by drawing `Rectangle((2,2), 4, 3)` on a plot with
+`set_xlim(0,10)`, `set_ylim(0,10)`, and `invert_yaxis()`. The observed edges span x from 2
+to 6 and y from 2 to 5, so the anchor is the corner with minimum x and minimum y.
+
+Whether that looks like top left depends on axis direction. With `invert_yaxis()`, and with
+`imshow` which inverts automatically, minimum y is the top, so it renders top left. On a
+normal upward y axis the identical code anchors bottom left instead. That ambiguity is
+exactly why the docs say "anchor point" rather than "top left corner."
+
+So `x0 = x_center*img_w - box_w_px/2` and `y0 = y_center*img_h - box_h_px/2` produce the
+minimum x and minimum y corner, which is what Rectangle wants. Box math confirmed.
 
 ### matplotlib names explained (day 1)
-- `plt.subplots()` -- FUNCTION. Builds a figure + plotting area. RETURNS TWO objects:
-  fig (the whole canvas) and ax (the area you draw into). figsize is optional;
-  default is 6.4 x 4.8 inches (verified via plt.rcParams['figure.figsize']).
-- `ax.set_xlim(a, b)` / `ax.set_ylim(a, b)` -- METHODS on ax. Fix the visible range of
-  an axis. RETURN the tuple you passed, which is ignored -- called for side effect.
-- `ax.invert_yaxis()` -- METHOD on ax. Flips y to count downward. RETURNS None.
-  Needed because images count pixel rows from the top; imshow does this automatically.
-- `patches.Rectangle(xy, w, h)` -- CLASS, constructs an object. RETURNS a Rectangle.
-  DRAWS NOTHING on its own -- the object is invisible until attached.
-- `ax.add_patch(rect)` -- METHOD on ax. Attaches the shape so it renders.
-  RETURNS the same Rectangle back (ignored). THIS is what makes it appear.
-- `ax.plot(x, y, "bo")` -- METHOD on ax. Draws points/lines; "bo" = blue circle.
-  RETURNS a list of Line2D objects (ignored).
 
-CREATE vs DISPLAY is the recurring trap: Rectangle() makes it, add_patch() shows it.
-Skipping the second gives NO error and NO shape -- a silent failure.
+`plt.subplots()` is a function. It builds a figure plus a plotting area and returns two
+objects: fig, the whole canvas, and ax, the area you draw into. figsize is optional and
+defaults to 6.4 by 4.8 inches, which I verified via `plt.rcParams['figure.figsize']`.
 
-### Is PyroNear's published train/val split held out by camera? (NO -- verified)
-Checked directly: set(ds['train']['camera']) vs set(ds['val']['camera']).
-  train = 39 cameras, val = 24, overlap = 23, val-only = {'brison-226'}
-So only 1 of 24 val cameras is genuinely unseen in training. The shipped val score
-measures "detect smoke against mostly-seen backgrounds", NOT "generalise to a new
-lookout tower" -- it will read optimistically versus real deployment.
+`ax.set_xlim(a, b)` and `ax.set_ylim(a, b)` are methods on ax. They fix the visible range of
+an axis and return the tuple you passed, which is ignored. They are called for side effect.
 
-Camera names encode SITE + BEARING: brison-200 / -110 / -290 / -20 are one physical
-tower facing four directions. Group by the prefix before the dash, not by full name.
-Distribution is steep: brison-200 + brison-110 alone are ~25% of the 29,537 train rows.
+`ax.invert_yaxis()` is a method on ax. It flips y to count downward and returns None. It is
+needed because images count pixel rows from the top, and imshow does this automatically.
 
-Consequence for Day 3: split by SITE (and by fire sequence), holding whole sites out,
-if you want an honest generalisation number.
+`patches.Rectangle(xy, w, h)` is a class that constructs an object and returns a Rectangle.
+It draws nothing on its own. The object stays invisible until attached.
 
-Set operations used, for reference:
-- `set(x)` -- built-in type storing unique unordered values. RETURNS a new set.
-- `a & b` -- intersection. RETURNS a new set of values present in BOTH. No mutation.
-- `a - b` -- difference. RETURNS values in `a` that are not in `b`.
+`ax.add_patch(rect)` is a method on ax. It attaches the shape so it renders, and returns the
+same Rectangle back, which is ignored. This is what makes the shape appear.
 
-### Where does the data actually come from? (CORRECTION -- verified 2026-08-31)
-I previously said pyro-sdis covers "France, Spain, Chile, US". WRONG -- that described
-the broader PYRONEAR-2025 research dataset. pyro-sdis is 100% FRENCH:
-  sdis-07  15,342 (Ardeche)  |  force-06 12,322 (Alpes-Maritimes)  |  sdis-77 1,873
-Camera prefixes are French place names: brison, cabanelle, courmettes, croix-augas,
-ferion, marguerite, serre-de-barre, valbonne. SDIS = French fire service.
+`ax.plot(x, y, "bo")` is a method on ax. It draws points or lines, where "bo" means blue
+circle, and returns a list of Line2D objects that is ignored.
 
-THE DATA PLAN IS THEREFORE CROSS-CONTINENT:
-  TRAIN     pyro-sdis    29,537 imgs   FRANCE
-  BENCHMARK FIgLib       522 seqs      SOUTHERN CALIFORNIA
-  DEPLOY    HPWREN RT    live feeds    SOUTHERN CALIFORNIA
+CREATE versus DISPLAY is the recurring trap here. `Rectangle()` makes it and `add_patch()`
+shows it. Skipping the second gives no error and no shape, which is a silent failure.
 
-Why not just train on FIgLib? Because FIgLib has NO BOUNDING BOXES -- its labels are
-time-offsets encoded in filenames (_-02400 = 2400s before ignition, _+00000 = ignition).
-That tells you WHETHER a frame has smoke, not WHERE. You cannot train a box detector on
-frame-level labels. PyroNear is the only one of the two with real box annotations.
+### Is PyroNear's published train/val split held out by camera? (no, verified)
 
-Consequence: benchmark FIgLib at the FRAME level ("did it alert on this frame?") rather
-than by box overlap. That is also the operationally correct metric -- did it catch the fire.
+I checked directly by comparing `set(ds['train']['camera'])` against
+`set(ds['val']['camera'])`. Train has 39 cameras, val has 24, the overlap is 23, and the
+only val exclusive camera is `brison-226`.
 
-THREE TIERS OF EVAL HONESTY, weakest to strongest:
-  1. val mAP            -- same cameras as train (23/24 overlap). Optimistic, near-meaningless alone.
-  2. held-out-site mAP  -- French, unseen towers. Honest generalisation within France.
-  3. FIgLib frame-level -- California. True cross-domain; predicts real deployment.
-A large gap between 2 and 3 quantifies the cost of domain shift -- that is a FINDING to
-report, not a failure to hide.
+So 1 of 24 val cameras is genuinely unseen in training. The shipped val score measures
+detecting smoke against mostly seen backgrounds, not generalizing to a new lookout tower.
+It reads optimistically compared to real deployment.
 
-### Does FIgLib ship bounding-box annotations? (NO -- verified on disk 2026-08-31)
-Inspected a downloaded sequence (20160604_FIRE_rm-n-mobo-c): 81 .jpg + 1 .mp4, and
-ZERO non-image files. No .txt/.xml/.csv/.json. The only labels are in the FILENAMES:
-<unix_ts>_<offset>.jpg where offset is seconds from ignition (-02400 .. +02400).
-So FIgLib gives frame-level smoke/no-smoke, never box locations. Confirms it can be a
-benchmark but never a training set for a box detector.
-(A third-party box-annotation repo exists -- aiformankind/wildfire-smoke-dataset -- but
-it is dead since 2021 and licensed CC BY-NC-SA, i.e. non-commercial. Not used.)
+Camera names encode site plus bearing. `brison-200`, `-110`, `-290`, and `-20` are one
+physical tower facing four directions, so grouping has to happen on the prefix before the
+dash rather than the full name. The distribution is steep: `brison-200` and `brison-110`
+alone are about 25% of the 29,537 training rows.
 
-### DESIGN OPTION (not scheduled): pseudo-labelling to close the France->California gap
-Idea: run the French-trained model on California frames, keep confident predictions,
-train on them. This is a real established technique (pseudo-labelling / self-training).
+The consequence is that an honest generalization number requires splitting by site, and by
+fire sequence, holding whole sites out.
 
-THE KNOWN KILLER is confirmation bias: the model's errors become its training data, so
-it grows MORE confident in the same mistakes. If it reads Californian fog as smoke,
-pseudo-labelling teaches it fog IS smoke, permanently.
+Set operations used, for reference. `set(x)` is a built in type storing unique unordered
+values and returns a new set. `a & b` is intersection and returns a new set of values
+present in both, with no mutation. `a - b` is difference and returns values in `a` that are
+not in `b`.
 
-WHY FIgLib IS UNUSUALLY SAFE FOR THIS: the filename offsets give free ground truth on
-box EXISTENCE (not location). So:
-  * any box drawn on a PRE-ignition frame is definitionally wrong -- no fire exists yet.
-    Discard it, and COUNT it: that is a free, exact false-positive rate on real
-    California imagery.
-  * any box on a POST-ignition frame is at least plausible -- smoke genuinely is present.
-The filenames, not the model, decide whether it was right. That breaks the feedback loop.
+### Where does the data actually come from? (correction, verified 2026-08-31)
 
-STACKING SAFEGUARDS: confidence thresholding; temporal consistency (real smoke persists
-and grows across consecutive frames, noise flickers); human spot-check of a sample; and
-NEVER train on pseudo-labels alone -- always mix with the real French boxes as an anchor.
+I had this wrong. I believed pyro-sdis covered France, Spain, Chile, and the US, but that
+describes the broader PYRONEAR-2025 research dataset. pyro-sdis is entirely French:
 
-SEQUENCING: measure the tier-3 gap FIRST. If the French model already does fine on
-California, this is unnecessary complexity. Only pursue if the gap is genuinely bad.
+    sdis-07   15,342  (Ardeche)
+    force-06  12,322  (Alpes-Maritimes)
+    sdis-77    1,873
+
+The camera prefixes are French place names: brison, cabanelle, courmettes, croix-augas,
+ferion, marguerite, serre-de-barre, valbonne. SDIS is the French fire service.
+
+That makes the data plan cross continent:
+
+    TRAIN      pyro-sdis   29,537 images   France
+    BENCHMARK  FIgLib      522 sequences   Southern California
+    DEPLOY     HPWREN RT   live feeds      Southern California
+
+Why not just train on FIgLib? Because FIgLib has no bounding boxes. Its labels are time
+offsets encoded in filenames, where `_-02400` means 2400 seconds before ignition and
+`_+00000` is ignition itself. That tells you whether a frame has smoke, not where it is,
+and you cannot train a box detector on frame level labels. PyroNear is the only one of the
+two with real box annotations.
+
+So FIgLib gets benchmarked at the frame level, asking whether the model alerted on a frame.
+That is also the operationally correct question: did it catch the fire.
+
+Three tiers of eval honesty, weakest to strongest:
+
+1. val mAP, on the same cameras as training with 23 of 24 overlapping. Optimistic and close
+   to meaningless on its own.
+2. Held out site mAP, French, unseen towers. An honest generalization number within France.
+3. FIgLib frame level, California. True cross domain, and the one that predicts real
+   deployment.
+
+A large gap between 2 and 3 quantifies the cost of domain shift. That is a finding worth
+reporting, not a failure to hide.
+
+### Does FIgLib ship bounding box annotations? (no, verified on disk 2026-08-31)
+
+I inspected a downloaded sequence, `20160604_FIRE_rm-n-mobo-c`, and found 81 `.jpg` files
+plus 1 `.mp4`, with zero non image files. No `.txt`, `.xml`, `.csv`, or `.json`.
+
+The only labels live in the filenames: `<unix_ts>_<offset>.jpg` where offset is seconds from
+ignition, running from -02400 to +02400. So FIgLib gives frame level smoke or no smoke and
+never box locations, which confirms it can be a benchmark but never a training set for a
+box detector.
+
+A third party box annotation repo exists, aiformankind/wildfire-smoke-dataset, but it has
+been dead since 2021 and is licensed CC BY-NC-SA, meaning non commercial. Not used.
+
+### Design option, not scheduled: pseudo labelling to close the France to California gap
+
+The idea is to run the French trained model on California frames, keep the confident
+predictions, and train on them. This is an established technique, usually called pseudo
+labelling or self training.
+
+The known killer is confirmation bias. The model's errors become its training data, so it
+grows more confident in the same mistakes. If it reads Californian fog as smoke, pseudo
+labelling teaches it that fog is smoke, permanently.
+
+FIgLib is unusually safe for this because the filename offsets give free ground truth on
+box existence, though not location. Any box drawn on a pre ignition frame is definitionally
+wrong, since no fire exists yet. Discard it and count it, and that count is a free, exact
+false positive rate on real California imagery. Any box on a post ignition frame is at
+least plausible, because smoke genuinely is present. The filenames rather than the model
+decide whether it was right, and that is what breaks the feedback loop.
+
+Safeguards worth stacking: confidence thresholding, temporal consistency since real smoke
+persists and grows across consecutive frames while noise flickers, human spot checks of a
+sample, and never training on pseudo labels alone. Always mix with the real French boxes as
+an anchor.
+
+Sequencing matters. Measure the tier 3 gap first. If the French model already does fine on
+California this is unnecessary complexity, so only pursue it if the gap is genuinely bad.
 
 ### Box outline thickness has to adapt to box size (noticed 2026-08-31)
-Drawing row 12 with linewidth=2 revealed the problem: its boxes are 20.3 x 6.6 px and
-20.1 x 9.9 px, so a 2px outline consumes 68% and 52% of the box respectively. You end up
-looking at more border than smoke, which defeats the point of visual label checking.
-By contrast row 0's box (171.8 x 77.8 px) loses only 7% to the same outline.
 
-FIX for the visualisation: scale linewidth to box size (e.g. linewidth = max(0.5,
-min(2, box_h/10))), or for genuinely tiny boxes crop-and-zoom the region instead of
-outlining it in place. Display-only issue -- does not affect the model.
+Drawing row 12 with `linewidth=2` exposed the problem. Its boxes are 20.3 by 6.6 px and
+20.1 by 9.9 px, so a 2px outline consumes 68% and 52% of the box respectively. You end up
+looking at more border than smoke, which defeats the point of checking labels visually. Row
+0's box, at 171.8 by 77.8 px, loses only 7% to the same outline.
 
-### HOW SMALL IS SMOKE, ACTUALLY? (measured over 2,894 boxes / 3,000 rows)
-  1st pct 0.0134%  |  25th 0.0667%  |  MEDIAN 0.1356%  |  75th 0.3047%  |  99th 3.76%
-  smallest 0.00742%   largest 36.6%   -- a ~5,000x range
-  38% OF ALL BOXES ARE UNDER 0.1% OF THE FRAME.
+The fix for visualization is to scale linewidth to box size, something like
+`linewidth = max(0.5, min(2, box_h/10))`, or for genuinely tiny boxes to crop and zoom the
+region instead of outlining it in place. This is display only and does not affect the model.
 
-Row 0 (1.45%) is NOT typical -- it sits in roughly the top 10% by size. Typical smoke
-looks like row 12: a ~20px-wide smudge.
+### How small is smoke, actually? (measured over 2,894 boxes across 3,000 rows)
 
-CONSEQUENCE FOR DAY 4 (training):
-  * Small-object detection is a known weakness of YOLO-family models.
-  * Default imgsz=640 downscales a 20x7 box to about 10x3 px -- at or below what the
-    architecture can resolve. imgsz is a REAL DECISION here, not a default to accept.
-    Higher imgsz costs GPU memory and time; that tradeoff needs measuring, not guessing.
-  * Day 5 eval must BUCKET BY BOX SIZE. A single aggregate mAP will hide complete
-    failure on the smallest third while looking acceptable overall.
+    1st pct  0.0134%   |  25th 0.0667%  |  median 0.1356%
+    75th     0.3047%   |  99th 3.76%
+    smallest 0.00742%  |  largest 36.6%
 
-### Site grouping + split, DONE (2026-09-01)
-8 physical sites from 39 camera names, via cam.rsplit('-', 1)[0]:
-  brison 10,605 (35.9%) | courmettes 6,553 | marguerite 4,433 | cabanelle 2,416
-  ferion 1,944 | croix-augas 1,873 | valbonne 1,409 | serre-de-barre 304
-Held out marguerite + valbonne -> Counter({'train': 23695, 'val': 5842}) = 19.8% val,
-and 23,695 + 5,842 = 29,537 so nothing was lost or double-counted. Zero site leakage.
+That is roughly a 5,000x range, and 38% of all boxes are under 0.1% of the frame.
 
-### Two bugs hit while writing it, both worth remembering
-1. NO OUTPUT AT ALL from a loop that fills a collection = nothing was ever added.
-   The `sites[site] += 1` line was missing -- the loop computed `site` and discarded it
-   every pass. Symptom distinction worth keeping: BLANK output means the collection is
-   empty; WRONG output means it filled incorrectly. Different causes, different fixes.
-   Habit: print(len(collection)) right after a loop that is supposed to fill something.
+Row 0, at 1.45%, is not typical. It sits in about the top 10% by size. Typical smoke looks
+like row 12: a smudge around 20px wide.
 
-2. `camera.replit(...)` instead of `rsplit` -> AttributeError: 'str' object has no
-   attribute 'replit'. The traceback's LAST line named it exactly.
-   Also learned why that traceback was long: Counter() consuming a generator expression
-   means split_for() runs lazily from deep inside collections/__init__.py. The library
-   frames are just the call path -- skip them, find the frame pointing at YOUR file.
+The consequences for training are real. Small object detection is a known weakness of the
+YOLO family. The default `imgsz=640` downscales a 20 by 7 box to roughly 10 by 3 px, at or
+below what the architecture can resolve, which makes imgsz an actual decision rather than a
+default to accept. Higher imgsz costs GPU memory and time, and that tradeoff needs
+measuring rather than guessing. Eval also has to bucket by box size, because a single
+aggregate mAP will hide complete failure on the smallest third while looking acceptable
+overall.
 
-### PROJECT DECISION (2026-09-01): full scope, Sept 17 is a checkpoint not a deadline
-Considered cutting Phase 3 (FastAPI/Postgres/S3/Docker/k3s, ~8 build tasks) to hit
-Sept 17. DECIDED AGAINST. Nothing gets removed. Sept 17 becomes a progress checkpoint,
-and the pace is deliberately uneven -- heavy some days, light others.
+### Site grouping and split, done (2026-09-01)
 
-Honest pace data behind the decision: Days 1-3 of the plan took 4 calendar days
-(Aug 29 -> Sep 1). Extrapolating, the remaining 17 plan-days land nearer Sept 22-24
-than Sept 17. That is accepted, not a problem to solve by cutting.
+8 physical sites from 39 camera names, via `cam.rsplit('-', 1)[0]`:
 
-Reasoning for keeping Phase 3: containerisation and a real API contract are the parts
-that appear most often in job descriptions, so cutting them would remove resume value
-to protect a self-imposed date nobody else set.
+    brison  10,605 (35.9%)  |  courmettes 6,553  |  marguerite 4,433
+    cabanelle  2,416        |  ferion     1,944  |  croix-augas 1,873
+    valbonne   1,409        |  serre-de-barre 304
 
-CONSEQUENCE FOR THE TRACKER: dated days stop being meaningful at a variable pace.
-The plan should be read as an ORDERED QUEUE ("what is next") rather than a calendar
-("what is due today").
+Holding out marguerite and valbonne gives `Counter({'train': 23695, 'val': 5842})`, which
+is 19.8% val. 23,695 plus 5,842 is 29,537, so nothing was lost or double counted. Zero site
+leakage.
 
-### THE single_cls BUG (2026-09-02) -- cost one 7.7-hour training run
-SYMPTOM: training reported mAP50 climbing to 0.753 over 30 epochs, but loading the
-saved best.pt and running val() standalone gave mAP50 = 0.029. Same weights, same val
-set, 26x disagreement. last.pt was worse still (0.0287).
+### Two bugs hit while writing that, both worth remembering
 
-The metrics alone could not explain it. PREDICTING ON ONE IMAGE AND LOOKING did:
-the model drew 10 boxes at confidence EXACTLY 1.00, tiled as even vertical strips
-across the lower frame. That is a collapsed box-regression head emitting grid
-positions, not detection. It also explained the numbers -- strips that large overlap
-almost any real box by accident (recall 0.84) while being almost entirely wrong
-(precision 0.03-0.07).
+No output at all from a loop that fills a collection means nothing was ever added. My
+`sites[site] += 1` line was missing, so the loop computed `site` and discarded it every
+pass. The symptom distinction is worth keeping: blank output means the collection is empty,
+wrong output means it filled incorrectly. Different causes, different fixes. The habit that
+catches it is `print(len(collection))` right after a loop that is supposed to fill
+something.
 
-Second clue in the same picture: boxes labelled "item", not "smoke". That is
-Ultralytics' placeholder when single_cls=True overrides the names in data.yaml.
+`camera.replit(...)` instead of `rsplit` gave `AttributeError: 'str' object has no
+attribute 'replit'`, and the traceback's last line named it exactly. I also learned why
+that traceback was so long. `Counter()` consuming a generator expression means
+`split_for()` runs lazily from deep inside `collections/__init__.py`, so the library frames
+are just the call path. Skip them and find the frame pointing at my own file.
 
-CONFIRMED BY CONTROLLED TEST -- 2 epochs, identical config minus single_cls:
-                     in-training mAP50   standalone val()   gap
-  with single_cls          0.753              0.029         26x
-  without                  0.660              0.660         none
-Also trained BETTER: epoch 2 scored 0.660 without the flag vs 0.534 with it.
-Final proof: on a val image with ZERO ground-truth boxes, the broken model drew 10
-boxes at conf 1.00; the fixed model correctly predicted nothing.
+### Project decision (2026-09-01): full scope, Sept 17 is a checkpoint not a deadline
 
-ROOT CAUSE OF THE MISTAKE: single_cls=True was copied from Pyronear's args.yaml
-without asking why THEY needed it. The labels here were already remapped to class 0
-and data.yaml already declared nc: 1 -- the dataset was single-class by construction,
-so the flag had nothing to collapse and only interfered.
+I considered cutting Phase 3, meaning FastAPI, Postgres, S3, Docker, and k3s, around 8
+build tasks, in order to hit Sept 17. I decided against it. Nothing gets removed. Sept 17
+becomes a progress checkpoint instead, and the pace is deliberately uneven, heavy some days
+and light others.
 
-LESSONS:
-1. A reference config is a REFERENCE, not a template. Ask what each setting is FOR
-   before copying it.
-2. When metrics contradict each other, STOP doing metric archaeology and LOOK at a
-   prediction. One image answered what four val() runs could not.
-3. Confidence of EXACTLY 1.00 is a red flag, not a good sign. Real detections vary
-   (0.81, 0.64, 0.43). Uniform 1.0 means a saturated output, i.e. breakage.
-4. Always sanity-check against a KNOWN-EMPTY image. Predicting nothing on nothing is
-   a real test, and it is cheap.
+The honest pace data behind that: days 1 to 3 of the plan took 4 calendar days, Aug 29 to
+Sep 1. Extrapolating, the remaining 17 plan days land nearer Sept 22 to 24 than Sept 17.
+That is accepted rather than a problem to solve by cutting.
 
-### HPWREN ACCESS -- WORKING URLs (verified live 2026-09-03)
+The reason for keeping Phase 3 is that containerization and a real API contract are the
+parts that show up most often in job descriptions, so cutting them would remove resume
+value to protect a self imposed date nobody else set.
 
-c1.hpwren.ucsd.edu and c2.hpwren.ucsd.edu ARE DEAD. DNS resolves (c1 -> 169.228.44.159)
-but connections time out. Every HPWREN doc page still lists them, including the 2021
-"Camera Image Access" overview. Those docs are stale. Everything moved to CloudFront.
+The consequence for tracking is that dated days stop being meaningful at a variable pace.
+The plan should be read as an ordered queue, meaning what is next, rather than a calendar
+meaning what is due today.
 
-WORKING (all verified by actual fetch):
+### The single_cls bug (2026-09-02), which cost one 7.7 hour training run
 
-  LIVE frame, always current:
+The symptom: training reported mAP50 climbing to 0.753 over 30 epochs, but loading the
+saved `best.pt` and running `val()` standalone gave mAP50 of 0.029. Same weights, same val
+set, a 26x disagreement. `last.pt` was worse still at 0.0287.
+
+The metrics alone could not explain it. Predicting on one image and looking at the output
+did. The model drew 10 boxes at confidence exactly 1.00, tiled as even vertical strips
+across the lower frame. That is a collapsed box regression head emitting grid positions
+rather than detections. It also explained the numbers, because strips that large overlap
+almost any real box by accident, giving recall of 0.84 while being almost entirely wrong,
+with precision between 0.03 and 0.07.
+
+A second clue sat in the same picture. The boxes were labelled "item" rather than "smoke,"
+which is Ultralytics' placeholder when `single_cls=True` overrides the names in
+`data.yaml`.
+
+Confirmed by a controlled test, 2 epochs, identical config minus the flag:
+
+                         in-training mAP50   standalone val()   gap
+      with single_cls          0.753              0.029         26x
+      without                  0.660              0.660         none
+
+It also trained better. Epoch 2 scored 0.660 without the flag against 0.534 with it. Final
+proof: on a val image with zero ground truth boxes, the broken model drew 10 boxes at
+confidence 1.00 while the fixed model correctly predicted nothing.
+
+The root cause of the mistake was copying `single_cls=True` from Pyronear's `args.yaml`
+without asking why they needed it. My labels were already remapped to class 0 and my
+`data.yaml` already declared `nc: 1`, so the dataset was single class by construction. The
+flag had nothing to collapse and only interfered.
+
+What I took from it:
+
+1. A reference config is a reference, not a template. Ask what each setting is for before
+   copying it.
+2. When metrics contradict each other, stop doing metric archaeology and look at a
+   prediction. One image answered what four `val()` runs could not.
+3. Confidence of exactly 1.00 is a red flag, not a good sign. Real detections vary, at 0.81,
+   0.64, 0.43. Uniform 1.0 means a saturated output, which means breakage.
+4. Always sanity check against a known empty image. Predicting nothing on nothing is a real
+   test, and it is cheap.
+
+### HPWREN access, working URLs (verified live 2026-09-03)
+
+`c1.hpwren.ucsd.edu` and `c2.hpwren.ucsd.edu` are dead. DNS resolves, with c1 pointing at
+169.228.44.159, but connections time out. Every HPWREN doc page still lists them, including
+the 2021 "Camera Image Access" overview, so those docs are stale. Everything moved to
+CloudFront.
+
+What works, all verified by actual fetch:
+
+Live frame, always current:
+
     https://cdn.hpwren.ucsd.edu/RT/<camera>.jpg
-    -> verified bh-n-mobo-c: 200, 3072x2048, 188 KB, Last-Modified 52 SECONDS old.
-       This is the live feed. One URL, no listing to parse.
 
-  ARCHIVE frame:
+Verified on bh-n-mobo-c: 200, 3072x2048, 188 KB, with Last-Modified 52 seconds old. This is
+the live feed, one URL, no listing to parse.
+
+Archive frame:
+
     https://cdn.hpwren.ucsd.edu/MTA/<camera>/large/<yyyymmdd>/Q<n>/<unix_ts>.jpg
 
-  INDEX of a 3-hour block (newline-separated filenames):
+Index of a 3 hour block, newline separated filenames:
+
     https://cdn.hpwren.ucsd.edu/hpwren-cameras/<cam>/<yyyy>/<yyyymmdd>/<yyyymmdd>_<cam>_Q<n>.txt
-    -> ONLY published AFTER the block closes. Q6 gave 180 names; Q7 was 403 while in
-       progress. So the index route lags up to 3h. That is why /RT/ exists.
 
-  CAMERA MANIFEST:
+That index is only published after the block closes. Q6 gave 180 names while Q7 returned
+403 during its own block, so the index route lags up to 3 hours. That is why `/RT/` exists.
+
+Camera manifest:
+
     https://www.hpwren.ucsd.edu/cameras/sites.js
-    -> 81 sites, 503 cameras, 199 color. lat/long/elev/azimuth per camera.
 
-  Q blocks are LOCAL Pacific time: Q1 00-03, Q2 03-06, Q3 06-09, Q4 09-12,
-  Q5 12-15, Q6 15-18, Q7 18-21, Q8 21-24. (Q6 spanned 15:00:04 to 17:59:05 local.)
+81 sites, 503 cameras, 199 of them color, with lat, long, elevation, and azimuth per camera.
 
-CADENCE: CONFIRMED 1 frame/min. Q6 held exactly 180 frames for 3 hours; deltas were
-61, 60, 60, 59, 61, 60 seconds. The 1-frame-per-minute design matches the source exactly.
+Q blocks run on local Pacific time: Q1 covers 00-03, Q2 03-06, Q3 06-09, Q4 09-12, Q5 12-15,
+Q6 15-18, Q7 18-21, Q8 21-24. Q6 spanned 15:00:04 to 17:59:05 local.
 
-LIVENESS: sites.js marks all 503 cameras "active": "y", so THE FLAG IS USELESS as a
-liveness signal. Real test = fetch /RT/<cam>.jpg and check Last-Modified freshness.
-That is the same call the live loop makes anyway. Filter imager == "color" (the -c
-suffix); -m cameras are monochrome and the model trains on RGB.
+Cadence is confirmed at 1 frame per minute. Q6 held exactly 180 frames across 3 hours, with
+deltas of 61, 60, 60, 59, 61, and 60 seconds. The one frame per minute design matches the
+source exactly.
 
-POLICY: attribution to HPWREN required if images are published. No signed license, no
-registration, no stated rate limit. 1 req/min/camera matches their publish rate, so a
-live loop is inherently polite. Keep backfills sequential.
+On liveness, sites.js marks all 503 cameras `"active": "y"`, so that flag is useless as a
+liveness signal. The real test is fetching `/RT/<cam>.jpg` and checking Last-Modified
+freshness, which is the same call the live loop makes anyway. Filter on
+`imager == "color"`, the `-c` suffix, because `-m` cameras are monochrome and the model
+trains on RGB.
 
-### THREE RESOLUTIONS NOW IN PLAY (measured 2026-09-03) -- size_bucket default is dead
+On policy, attribution to HPWREN is required if images are published. There is no signed
+license, no registration, and no stated rate limit. One request per minute per camera
+matches their publish rate, so a live loop is inherently polite. Backfills stay sequential.
 
-  PyroNear (training)  1280x720    16:9   0.92 MP   <- sampled 500 imgs, 100% uniform
-  FIgLib (archive)     2048x1536    4:3   3.1  MP   <- all 81 frames of the one sequence
-  HPWREN live          3072x2048    3:2   6.3  MP   <- verified by download
+### Three resolutions now in play (measured 2026-09-03), so the size_bucket default is dead
 
-Live frames are 6.8x the pixels of training data, at a THIRD aspect ratio.
+    PyroNear (training)   1280x720    16:9   0.92 MP    sampled 500 images, 100% uniform
+    FIgLib (archive)      2048x1536    4:3   3.1  MP    all 81 frames of the one sequence
+    HPWREN live           3072x2048    3:2   6.3  MP    verified by download
 
-CONSEQUENCE 1: size_bucket(box, img_w=1280, img_h=720) must take REQUIRED dims. A default
-is wrong for two of the three sources. Passing the wrong denominator inflates `frac` and
-mislabels small boxes as medium -- you would conclude the model handles small smoke better
-than it does.
+Live frames are 6.8x the pixel count of the training data, at a third aspect ratio.
 
-CONSEQUENCE 2: downscaling eats small smoke. At imgsz=1024 a 3072x2048 frame is squeezed
-~3x, so a 30px plume reaches the model as 10px. 38% of PyroNear boxes are already under
-0.1% of frame area. This is the concrete, measured argument for tiling -- a number now,
-not a theory. Worth one experiment on honest weights: same live frame, full-frame vs tiled.
+The first consequence is that `size_bucket(box, img_w=1280, img_h=720)` has to take
+required dimensions. A default is wrong for two of the three sources, and passing the wrong
+denominator inflates `frac` and mislabels small boxes as medium. I would end up concluding
+the model handles small smoke better than it does.
+
+The second consequence is that downscaling eats small smoke. At `imgsz=1024` a 3072x2048
+frame is squeezed about 3x, so a 30px plume reaches the model as 10px. 38% of PyroNear
+boxes are already under 0.1% of frame area. That is a concrete, measured argument for
+tiling rather than a theory, and it is worth one experiment once I have honest weights:
+the same live frame, full frame against tiled.
