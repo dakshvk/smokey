@@ -7,8 +7,8 @@ a FastAPI + Postgres + S3 backend.
 Built Aug 29 - Sep 17 2026. Tracked in Alfred at /api/smokey.
 
 ## Layout
-    data/figlib/     FIgLib archive - 522 labeled fire sequences (training)
-    data/pyronear/   PyroNear2025 from HuggingFace (training)
+    data/figlib/     FIgLib archive - 522 fire sequences (benchmark only, no boxes)
+    data/pyronear/   pyro-sdis from HuggingFace (training)
     models/          checkpoints, ONNX exports, quantized variants
     edge/            the device program: fetch -> infer -> queue -> post
     cloud/           FastAPI service, Postgres schema, S3 storage
@@ -17,9 +17,16 @@ Built Aug 29 - Sep 17 2026. Tracked in Alfred at /api/smokey.
     results/         benchmarks, thermal plots, run logs
 
 ## Data
-Training frames are labeled by filename: `<unix_ts>_<offset>.jpg` where offset is
-seconds relative to fire ignition. Negative = before ignition (no smoke),
-positive = after (smoke). No manual annotation needed.
+Training uses pyro-sdis, which has real bounding boxes. It is 100% French imagery
+(sdis-07, force-06, sdis-77), so the model is trained on one continent and deployed
+on another.
+
+FIgLib is the California benchmark, not a training set: it ships no bounding boxes
+at all. Its frames are labeled by filename, `<unix_ts>_<offset>.jpg`, where offset
+is seconds relative to ignition. Negative means before ignition and so no smoke,
+positive means after. That gives frame level ground truth on whether smoke is
+present, never on where it is, which is enough to score a detector but not to train
+one.
 
 Live inference reads https://cdn.hpwren.ucsd.edu/RT/<camera-id>.jpg
 Poll at 1 frame/min per camera. HPWREN is NSF-funded research infrastructure -
