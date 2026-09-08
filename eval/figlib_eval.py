@@ -34,7 +34,7 @@ def build_conf_table(model, seq_dirs, out_path):
             seq = os.path.basename(seq_dir.rstrip('/')) # gets name and final part of path removing the 2nd /
             frames = load_sequence(seq_dir) # loads frames 
             results = model.predict(source=[p for _, p in frames], # runs the model 
-                                    conf = 0.001, verbose=False)
+                                    conf = 0.001, verbose=False, stream=True)
             for (offset, _), r in zip(frames, results): # loops through frames and results together where zip() pairs em together 
                 confs = [float(b.conf[0]) for b in r.boxes]
                 w.writerow([seq, offset, max(confs) if confs else 0.0])
