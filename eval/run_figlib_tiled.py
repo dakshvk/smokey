@@ -26,7 +26,7 @@ def build_conf_table_tiled(model, seq_dirs, out_path): # model, figlib sequences
                 img = Image.open(path) # opens frame
                 crops = [img.crop(b) for b in tile_grid(img.width, img.height, TILE, OVERLAP)]
                 # cuts the rectangle out of original frame then becomes a list of image objects 
-                results = model.predict(source=crops, conf = 0.0001, verbose=False) # runs YOLO on all tiles 
+                results = model.predict(source=crops, conf = 0.001, verbose=False) # runs YOLO on all tiles 
                 confs = [float(b.conf[0]) for r in results for b in r.boxes] # for every result: for every bounding box: get its confidence 
                 w.writerow([seq, offset, max(confs) if confs else 0.0]) # keeps highest confidence & writes the frames result 
             print(f' done{seq}') # progress checker after completing a sequence 
@@ -37,7 +37,7 @@ seq_dirs = sorted( # goes into figlib directory and finds all sequences
     if os.path.isdir(os.path.join(SEQ_ROOT, d))   
 )
 
-if not os.path.esxits(CSV): # doesnt redo expensive inferences 
+if not os.path.exists(CSV): # doesnt redo expensive inferences 
     build_conf_table_tiled(YOLO(WEIGHTS), seq_dirs, CSV)
 else: 
     print(f'reusing{CSV}')

@@ -113,7 +113,7 @@ def sweep(sequences, thresholds=None, Ks=(1, 2, 3, 4, 5), M_extra=(0, 1, 2, 3)):
                 })
     return rows
 
-def operating_point(rows, max_alarms_per_day, min_detect_rate=0.9):
+def operating_point(rows, max_alarms_per_day, min_detect_rate=0.6):
     '''from all configs tested in sweep() throw away anything with too many false alarms,
      anything that doesn't detect fires enough, then choose remaining configs w fastest median detection time'''
 
