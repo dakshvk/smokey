@@ -2,12 +2,6 @@
 ive HPWREN frames are 3072x2048. The model runs at 1024. Downscaling the
 whole frame shrinks a 30px plume to ~10px so titling keeps the native size'''
 
-import argparse
-from pathlib import Path 
-import cv2
-from sahi import AutoDetectionModel 
-from sahi.utils.yolov5 import download_yolov5s6_model
-
 from ultralytics.utils.files import increment_path 
 
 def _starts(length, tile, stride): # takes in length of the image, size of each tile, and how far we move the next tile each time

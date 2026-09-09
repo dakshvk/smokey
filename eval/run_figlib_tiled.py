@@ -43,7 +43,7 @@ else:
     print(f'reusing{CSV}')
 rows = sweep(load_conf_table(CSV)) # evaluation 
 for budget in (0.5, 1, 2, 5): # testing diff false alarm budgets 
-    op = operating_point(rows, max_alarms_per_day=budget, min_detect_rate=0.9)
+    op = operating_point(rows, max_alarms_per_day=budget, min_detect_rate=0.6)
     print(f'\n<={budget} flase alarms/day (TILED):')
     print(' ', op if op else 'no config meets this budget')
 
