@@ -20,32 +20,32 @@ class CameraAlarm:
             raise ValueError(f'need 1 <= K <= M, got K={self.K} M={self.M}')
         self._window = deque(maxlen=self.M) # creates the rolling window 
 
-        @property  # turns method into an acessible attribute
-        def hot(self) -> bool: 
-            '''at least K of the last M frames at or above threshold'''
-            return sum(1 for c in self._window if c >= self.threshold) >= self.K 
-        # for every confidence in the threshold how many True values are there: True = conf's in M window being over Thresh and if thats more than or equal to K it fires to be counted as an alarm 
+    @property  # turns method into an acessible attribute
+    def hot(self) -> bool: 
+        '''at least K of the last M frames at or above threshold'''
+        return sum(1 for c in self._window if c >= self.threshold) >= self.K 
+    # for every confidence in the threshold how many True values are there: True = conf's in M window being over Thresh and if thats more than or equal to K it fires to be counted as an alarm 
 
-        def update(self, conf: float) -> bool: # camera new conf score is it a NEW alarm or not
-            '''Gives the camera one new confidence score 
-            Returns True on a NEW alarm 
-             True the first frame it goes hot then False while it stays hot then rearms'''
-            self._window.append(conf) # feeds new frame into the window 
-            if self.hot: # is cam hot, so are there enough K 
-                if self._armed: # are we ready to report  (CAMERA IS HOT)
-                    self._armed = False # disarms it if its been reported for the upcoming windows
-                    return True # after disarming it triggers the alarm 
-                return False # This is another frame of the same ongoing hot event which we already alreted do not trigger another alarm 
-            # prevents one alarm per frame 
-            else: # if cam is not hot then reset the alarm so we can trigger it when we get another alert 
-                self._armed = True  
-                return False # no alarm is getting sent on this cold frame 
+    def update(self, conf: float) -> bool: # camera new conf score is it a NEW alarm or not
+        '''Gives the camera one new confidence score 
+        Returns True on a NEW alarm 
+            True the first frame it goes hot then False while it stays hot then rearms'''
+        self._window.append(conf) # feeds new frame into the window 
+        if self.hot: # is cam hot, so are there enough K 
+            if self._armed: # are we ready to report  (CAMERA IS HOT)
+                self._armed = False # disarms it if its been reported for the upcoming windows
+                return True # after disarming it triggers the alarm 
+            return False # This is another frame of the same ongoing hot event which we already alreted do not trigger another alarm 
+        # prevents one alarm per frame 
+        else: # if cam is not hot then reset the alarm so we can trigger it when we get another alert 
+            self._armed = True  
+            return False # no alarm is getting sent on this cold frame 
 
-        def reset(self): # defines the reset operation
-            '''Used when camera goes offline and comes back 
-            Kind of like clearing History'''
-            self._window.clear() # deleted everything stored in _window
-            self._armed = True # rearms the camera 
+    def reset(self): # defines the reset operation
+        '''Used when camera goes offline and comes back 
+        Kind of like clearing History'''
+        self._window.clear() # deleted everything stored in _window
+        self._armed = True # rearms the camera 
 
 class AlarmBank: 
     '''One camera alarm per cam created on the first sight
