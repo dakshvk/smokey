@@ -10,8 +10,8 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'eval'))
 
-from edge.alarm import CameraAlarm, AlarmBank
-from figlib_eval import fires
+from alarm import CameraAlarm, AlarmBank
+from eval.figlib_eval import fires
 
 
 def test_matches_offline_fires():

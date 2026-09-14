@@ -1,4 +1,6 @@
 '''Solar elevation so inference isnt ran in the dark
+Used NOAA's standard solar-position formula 
+5 degree threshold is bc of when glare worst when low 
 '''
 
 import math 
@@ -31,11 +33,11 @@ def elevation_deg(lat: float, lon: float,
                   + math.cos(lat_r) * math.cos(decl) * math.cos(hour_angle))
     return 90 - math.degrees(math.acos(max(-1.0, min(1.0, cos_zenith))))
 
-
+# returns a bool comparing the returned float against min elevation 
 def is_daylight(lat: float, lon: float, min_elev: float = 5.0,
                 when: datetime | None = None) -> bool:
     '''min_elev of 5 degrees skips the low-sun window where glare is worst.'''
-    return elevation_deg(lat, lon, when) >= min_elev
+    return elevation_deg(lat, lon, when) >= min_elev # returns a float of how high ot below the horizon the sun is 
 
 
 if __name__ == '__main__':

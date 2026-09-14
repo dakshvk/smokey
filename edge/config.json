@@ -1,0 +1,25 @@
+{
+    "weights" : "models/best.pt",
+    "imgsz": 1024,
+
+    "threshold": 0.46,
+    "K": 1, 
+    "M": 1, 
+    "release_after": 3, 
+
+    "poll_seconds": 60,
+    "max_frame_age_s": 180,
+    "min_sun_elevation": 5.0,
+
+    "outbox_db": "edge/outbox.db",
+    "fram_dir": "edge/frames",
+
+    "api_url": "http://127.0.0.1:8000/detections",
+    "api_key": "",
+
+    "cameras": [
+    {"id": "bh-n-mobo-c", "lat": 33.20, "lon": -116.84},
+    {"id": "rm-w-mobo-c", "lat": 33.32, "lon": -116.86}
+    ]
+
+}
