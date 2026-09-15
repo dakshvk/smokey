@@ -12,7 +12,7 @@
     "min_sun_elevation": 5.0,
 
     "outbox_db": "edge/outbox.db",
-    "fram_dir": "edge/frames",
+    "frame_dir": "edge/frames",
 
     "api_url": "http://127.0.0.1:8000/detections",
     "api_key": "",
