@@ -1,33 +1,33 @@
-# containers that make up application - db, api 
-services: 
-  db: 
-    image: postgres:16 # using postgresql version 16 image 
-    # packaged template for creating container 
-    enviornment: # config values that get passed into PostrgeSQL container
-    POSTGRES_USER: smokey 
-    POSTGRES_PASSWORD: smokey
-    POSTGRES_DB: smokey
-  ports: ['5432:5432'] # host port : container port 
-  # inside docker: api -> db:5432
-  volumes: ['pgdata:/var/lib/postgresql/data'] # where sql stores its db files inside 
-  # creating a docker volume pgdata and mounting it at /var/lib keeps the db persistent if container gets deleted 
-  healthcheck: # checks whether sql is ready to accept connections
-    test: ['CMD:SHELL', 'pg_isready -U smokey'] # runs to see if sql and smokey user are ready 
-    interval: 5s # runs every 5 seconds and tries 10 times over before declaring it unsucessful 
+# containers that make up application - db, api
+services:
+  db:
+    image: postgres:16 # using postgresql version 16 image
+    # packaged template for creating container
+    environment: # config values that get passed into PostrgeSQL container
+      POSTGRES_USER: smokey
+      POSTGRES_PASSWORD: smokey
+      POSTGRES_DB: smokey
+    ports: ['5432:5432'] # host port : container port
+    # inside docker: api -> db:5432
+    volumes: ['pgdata:/var/lib/postgresql/data'] # where sql stores its db files inside
+    # creating a docker volume pgdata and mounting it at /var/lib keeps the db persistent if container gets deleted
+    healthcheck: # checks whether sql is ready to accept connections
+      test: ['CMD-SHELL', 'pg_isready -U smokey'] # runs to see if sql and smokey user are ready
+      interval: 5s # runs every 5 seconds and tries 10 times over before declaring it unsucessful
+      retries: 10
 
-    retries: 10 
   api: # smokey FastAPI cloud app
-  build: ./cloud # builds api container using dockerfile in ./cloud
-  enviornment: 
-    SMOKEY_DSN: postgresql://smokey:smokey@db:5432/smokey 
-    SMOKEY_API_KEY: dev-key
-    SMOKEY_BUCKET: smokey-detections
-    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-    AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-west-2}
-  portss: [8000:8000]
-  depends_on: 
-    db: {condition: service_healthy}
+    build: ./cloud # builds api container using dockerfile in ./cloud
+    environment:
+      SMOKEY_DSN: postgresql://smokey:smokey@db:5432/smokey
+      SMOKEY_API_KEY: dev-key
+      SMOKEY_BUCKET: smokey-detections
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-west-2}
+    ports: ['8000:8000']
+    depends_on:
+      db: {condition: service_healthy}
 
-volumes: 
+volumes:
   pgdata:

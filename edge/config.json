@@ -15,7 +15,7 @@
     "frame_dir": "edge/frames",
 
     "api_url": "http://127.0.0.1:8000/detections",
-    "api_key": "",
+    "api_key": "dev-key",
 
     "cameras": [
     {"id": "bh-n-mobo-c", "lat": 33.20, "lon": -116.84},

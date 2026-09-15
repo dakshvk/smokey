@@ -73,4 +73,4 @@ def health():
     try:
         return {'ok': True, **db.stats()}
     except Exception as e:
-        raise HTTPException(503, f'database unreachable: {type(
+        raise HTTPException(503, f'database unreachable: {type(e).__name__}')

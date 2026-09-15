@@ -2,8 +2,8 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN pip install --nocache-dir \ 
-    fastapi uvicorn[standard] psycopg[binary] boto3 pydantic 
+RUN pip install --no-cache-dir \
+    fastapi uvicorn[standard] psycopg[binary] boto3 pydantic
 
 COPY . /app/cloud/
 ENV PYTHONUNBUFFERED=1
