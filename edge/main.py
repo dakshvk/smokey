@@ -54,10 +54,10 @@ def drain(outbox: Outbox, url: str, api_key: str, limit: int =20):
             # keep 409 as detection isnt missing just duplicated 
             outbox.mark_sent(row['id']) # marks as sucessfully handled aka as 'sent'
             sent += 1 
-        else: 
+        else:
             outbox.mark_failed(row['id'], f'HTTP{r.status_code}')
-            break 
-        return sent 
+            break
+    return sent
 
 def run(cfg):
     '''recives config dict''' 
