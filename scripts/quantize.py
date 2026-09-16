@@ -2,9 +2,10 @@
 Making model faster and smaller for the realistic edge devices
 (smoke detecing cameras out in the field)'''
 
-import os, glob, random # find files based on patterns
+import os, glob, random, re # find files based on patterns
 #  randomly select subset of images for calibration
 import numpy as np # constructing numerical arrays
+import onnx # reading the graph to find the detect head's node names
 from PIL import Image
 from onnxruntime.quantization import quantize_static, CalibrationDataReader, QuantType, QuantFormat
 # module optimizes onnx models, faster inference speed than dynamic quantization: requires sample datset for calibration
@@ -40,6 +41,18 @@ import onnxruntime as ort # inspect onnx model
 inp = ort.InferenceSession('models/best.onnx').get_inputs()[0].name
 # loads onnx model gets a list of inputs and takes the first one
 
+# the detect head (DFL softmax/conv decode + box-coordinate arithmetic) is too
+# numerically fragile for int8 - quantizing it produces zero detections on every
+# frame, including obvious fires. find the last model.N block by node name and
+# keep it in float32; everything before it (backbone/neck, most of the compute)
+# still gets quantized.
+graph = onnx.load('models/best.onnx').graph
+blocks = sorted({int(m.group(1)) for n in graph.node
+                  if (m := re.match(r'/model\.(\d+)/', n.name))})
+head_prefix = f'/model.{blocks[-1]}/'
+exclude = [n.name for n in graph.node if n.name.startswith(head_prefix)]
+print(f'excluding {len(exclude)} detect-head nodes ({head_prefix}) from quantization')
+
 # now static quantization starts after making sure the input data is converted to onnx specifcations
 quantize_static(
     'models/best.onnx', 'models/best_int8.onnx',  # starting model & output model
@@ -51,6 +64,7 @@ quantize_static(
     weight_type=QuantType.QInt8, # original models weights are FloatingPoint32 onnx runtime is quantizing them to Int8
     # looking at weights datatype
     # using default activation type don't want to use slower kernels for no accuary benefits
+    nodes_to_exclude=exclude, # keep the fragile detect head in float32
 )
 
 print('wrote models/best_int8.onnx')
