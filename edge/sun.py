@@ -11,7 +11,7 @@ def elevation_deg(lat: float, lon: float,
     '''Given the exact moment in time + cameras lat/long
     where is the Sun?
     Checking if Sun's angle is above the horizon'''
-    when = (when or datetime.now(timezone.utc)).astimezone.utc(timezone.utc)
+    when = (when or datetime.now(timezone.utc)).astimezone(timezone.utc)
     doy = when.timetuple().tm_yday
     minutes = when.hour * 60 + when.minute + when.second / 60
 

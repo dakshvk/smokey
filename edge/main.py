@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # gets abs path of current file then getting its dir then that dir's name then adding the project's root to Python's list of placeswhere it looks for modules 
 
 from alarm import AlarmBank # managing alarm state 
-from detect import Dectector # yolo wrapper 
+from detect import Detector # yolo wrapper
 from fetch import fetch_frame # downloading frame 
 from outbox import Outbox # detection deque db 
 from sun import is_daylight # daytime function 
@@ -63,7 +63,7 @@ def run(cfg):
     '''recives config dict''' 
     os.makedirs(cfg['frame_dir'], exist_ok=True)
 # makes sure directroy exists if doesnt it makes it 
-    detector = Dectector(cfg['weights'], imgz=cfg.get('imgsz', 1024))
+    detector = Detector(cfg['weights'], imgsz=cfg.get('imgsz', 1024))
     # creates YOLO detector 
     alarms = AlarmBank(cfg['threshold'], cfg['K'], cfg['M'])
     #creates alarm system
