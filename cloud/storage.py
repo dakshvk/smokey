@@ -8,7 +8,10 @@ from botocore.exceptions import ClientError # catch AWS specific error
 
 BUCKET = os.environ.get('SMOKEY_BUCKET', 'smokey-detections') # smokey's bucket is called smokey-detections
 # every s3 object has a key
-_s3 = boto3.client('s3') # creates client
+_ENDPOINT = os.environ.get('SMOKEY_S3_ENDPOINT') or None
+# unset -> real AWS (boto3's default). set -> any S3-compatible endpoint, e.g. a local
+# test server, so this can be tested without a real AWS account.
+_s3 = boto3.client('s3', endpoint_url=_ENDPOINT) # creates client
 
 def key_for(camera: str, captured_at: str, det_id: str) -> str:
     '''Defines key for trigger frame'''

@@ -50,10 +50,20 @@ def drain(outbox: Outbox, url: str, api_key: str, limit: int =20):
             outbox.mark_failed(row['id'], f'{type(e).__name__}')
         # if failure we raise excpetion(get its name) with the det_id # 
             break
-        if r.status_code in (200, 201, 409): # checks server response 
-            # keep 409 as detection isnt missing just duplicated 
+        if r.status_code in (200, 201, 409): # checks server response
+            # keep 409 as detection isnt missing just duplicated
             outbox.mark_sent(row['id']) # marks as sucessfully handled aka as 'sent'
-            sent += 1 
+            sent += 1
+            if row['image_path'] and os.path.exists(row['image_path']):
+                # best-effort - the detection record is already durably sent, so a
+                # failed image upload here should never turn into a retry of the
+                # whole row (that would re-POST the detection JSON too)
+                try:
+                    with open(row['image_path'], 'rb') as img:
+                        requests.post(f"{url}/{row['id']}/image", files={'file': img},
+                                      headers=headers, timeout=10)
+                except requests.RequestException:
+                    pass
         else:
             outbox.mark_failed(row['id'], f'HTTP{r.status_code}')
             break

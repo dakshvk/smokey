@@ -17,14 +17,17 @@ services:
       retries: 10
 
   api: # smokey FastAPI cloud app
-    build: ./cloud # builds api container using dockerfile in ./cloud
+    build: . # builds api container using dockerfile in ./cloud
     environment:
       SMOKEY_DSN: postgresql://smokey:smokey@db:5432/smokey
       SMOKEY_API_KEY: dev-key
       SMOKEY_BUCKET: smokey-detections
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-west-2}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-testkey}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-testsecret}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      SMOKEY_S3_ENDPOINT: ${SMOKEY_S3_ENDPOINT:-http://host.docker.internal:5001}
+      # unset SMOKEY_S3_ENDPOINT (and set real AWS_* creds) to point at actual AWS S3 -
+      # storage.py falls back to boto3's default endpoint when this is empty
     ports: ['8000:8000']
     depends_on:
       db: {condition: service_healthy}
